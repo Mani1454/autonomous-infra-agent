@@ -26,6 +26,7 @@ if 'cpu_history' not in st.session_state:
 # Title
 st.title("🚀 Autonomous Infrastructure Agent - Phase 1")
 st.subheader("System Monitor Dashboard")
+st.caption("Auto-refresh: 5s")
 
 # Placeholder for dynamic content
 placeholder = st.empty()
@@ -99,13 +100,12 @@ while True:
             st.write("### Top 3 Processes")
             top_procs_df = pd.DataFrame(metrics['top_processes'])
             if not top_procs_df.empty:
-                top_procs_df.columns = ["PID", "Name", "CPU %"]
                 st.table(top_procs_df)
             else:
                 st.write("Fetching process data...")
 
-    # Wait for 2 seconds
-    time.sleep(2)
+    # Wait for 5 seconds
+    time.sleep(5)
     # Streamlit will naturally rerun if we use st.experimental_rerun() or if we just let the while loop run with st.empty container
     # However, standard practice for auto-refresh in modern Streamlit is sometimes different but a loop works for a simple agent script.
     # To avoid script timeout/lock, we can use st.rerun() instead of an infinite loop if we want to follow ST best practices, 

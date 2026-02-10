@@ -60,32 +60,54 @@ class SystemMonitor:
     def get_top_processes(self, limit: int = 3) -> List[Dict[str, Any]]:
         """
         Identifies the top N processes with the highest CPU consumption.
+        Strictly normalizes CPU usage and filters idle processes.
 
         Args:
             limit (int): The number of top processes to return. Defaults to 3.
 
         Returns:
             List[Dict[str, Any]]: A list of dictionaries, each representing a process
-                with keys 'pid', 'name', and 'cpu_percent'.
+                with keys 'PID', 'Name', and 'CPU %'.
         """
         process_list = []
+        cpu_count = psutil.cpu_count() or 1
         
-        # Iterating through all running processes
-        for process in psutil.process_iter(['pid', 'name', 'cpu_percent']):
+        for proc in psutil.process_iter(['pid', 'name', 'cpu_percent']):
             try:
-                # Append process information to the list
-                process_list.append(process.info)
+                pid = proc.info['pid']
+                name = proc.info['name']
+                cpu_p = proc.info['cpu_percent']
+
+                # 1. Skip System Idle Process immediately
+                if pid == 0:
+                    continue
+                
+                # 2. Double safety check for 'System Idle Process'
+                if name == 'System Idle Process':
+                    continue
+
+                if cpu_p is None:
+                    continue
+
+                # 3. Calculate normalized CPU usage
+                normalized_cpu = float(cpu_p / cpu_count)
+                
+                process_list.append({
+                    'PID': int(pid),
+                    'Name': str(name),
+                    'CPU %': round(normalized_cpu, 1)
+                })
             except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
-                # Gracefully skip processes where access is denied or they terminated
                 continue
         
-        # Sort processes by CPU utilization in descending order
+        # 4. Sort by 'CPU %' in Descending order
         sorted_processes = sorted(
             process_list, 
-            key=lambda p: p['cpu_percent'] if p['cpu_percent'] is not None else 0, 
+            key=lambda p: p['CPU %'], 
             reverse=True
         )
         
+        # 5. Return top N
         return sorted_processes[:limit]
 
     def get_system_metrics(self) -> Dict[str, Any]:
