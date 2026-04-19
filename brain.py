@@ -79,3 +79,44 @@ class AIBrain:
                 "diagnosis": f"⚠️ AI Analysis Failed: {e}",
                 "recommended_action": {"target_pid": None}
             }
+
+
+
+
+
+
+# import json
+# import re
+# import google.generativeai as genai
+
+# class AIBrain:
+#     """
+#     AI-powered system health analyzer using Google Gemini.
+#     """
+
+#     def __init__(self, api_key: str) -> None:
+#         """
+#         Configures the Gemini API and initializes the Flash model.
+#         """
+#         genai.configure(api_key=api_key)
+#         self.model = genai.GenerativeModel("gemini-2.0-flash")
+
+#     def analyze_health(self, cpu_usage: float, mem_usage: float, top_processes: list) -> dict:
+#         """
+#         Sends system metrics to Gemini for root-cause analysis.
+#         """
+#         try:
+#             # --- TEMPORARY MOCK FOR PHASE 3 TESTING ---
+#             # This directly returns a hardcoded response to bypass the 429 Quota Error.
+#             return {
+#                 "diagnosis": "API is rate-limited, but simulated analysis shows Antigravity.exe is causing a memory leak.",
+#                 "recommended_action": {
+#                     "target_pid": 20392 
+#                 }
+#             }
+            
+#         except Exception as e:
+#             return {
+#                 "diagnosis": f"⚠️ AI Analysis Failed: {e}",
+#                 "recommended_action": {"target_pid": None}
+#             }
