@@ -1,25 +1,24 @@
 import json
 import re
-import google.generativeai as genai
+from google import genai
 
 
 class AIBrain:
     """
     AI-powered system health analyzer using Google Gemini.
 
-    Uses the Gemini Flash model to provide SRE-level diagnostics
+    Uses the Gemini 2.0 Flash model to provide SRE-level diagnostics
     when system resource thresholds are exceeded.
     """
 
     def __init__(self, api_key: str) -> None:
         """
-        Configures the Gemini API and initializes the Flash model.
+        Initializes the Gemini client with the provided API key.
 
         Args:
-            api_key: A valid Google Gemini API key.
+            api_key: A valid Google Gemini API key from Google AI Studio.
         """
-        genai.configure(api_key=api_key)
-        self.model = genai.GenerativeModel("gemini-2.0-flash")
+        self.client = genai.Client(api_key=api_key)
 
     def analyze_health(self, cpu_usage: float, mem_usage: float, top_processes: list) -> dict:
         """
@@ -46,7 +45,10 @@ class AIBrain:
         )
 
         try:
-            response = self.model.generate_content(prompt)
+            response = self.client.models.generate_content(
+                model="gemini-2.0-flash",
+                contents=prompt
+            )
             raw = response.text.strip()
 
             # Try direct JSON parse first
@@ -58,13 +60,12 @@ class AIBrain:
                 if match:
                     result = json.loads(match.group(1))
                 else:
-                    # Last resort: return as plain diagnosis with no action
                     result = {
                         "diagnosis": raw,
                         "recommended_action": {"target_pid": None}
                     }
 
-            # Validate structure
+            # Validate and ensure schema integrity
             if "diagnosis" not in result:
                 result["diagnosis"] = raw
             if "recommended_action" not in result:
@@ -75,48 +76,19 @@ class AIBrain:
             return result
 
         except Exception as e:
+            error_msg = str(e)
+            if "429" in error_msg or "quota" in error_msg.lower() or "rate" in error_msg.lower():
+                friendly = (
+                    "⚠️ Gemini API rate limit reached. "
+                    "The free tier allows 15 requests/minute. "
+                    "Analysis will resume automatically after the cooldown."
+                )
+            elif "403" in error_msg or "API_KEY" in error_msg.upper() or "invalid" in error_msg.lower():
+                friendly = "❌ Invalid Gemini API key. Please check the key entered in the sidebar."
+            else:
+                friendly = f"⚠️ AI Analysis temporarily unavailable: {e}"
+
             return {
-                "diagnosis": f"⚠️ AI Analysis Failed: {e}",
+                "diagnosis": friendly,
                 "recommended_action": {"target_pid": None}
             }
-
-
-
-
-
-
-# import json
-# import re
-# import google.generativeai as genai
-
-# class AIBrain:
-#     """
-#     AI-powered system health analyzer using Google Gemini.
-#     """
-
-#     def __init__(self, api_key: str) -> None:
-#         """
-#         Configures the Gemini API and initializes the Flash model.
-#         """
-#         genai.configure(api_key=api_key)
-#         self.model = genai.GenerativeModel("gemini-2.0-flash")
-
-#     def analyze_health(self, cpu_usage: float, mem_usage: float, top_processes: list) -> dict:
-#         """
-#         Sends system metrics to Gemini for root-cause analysis.
-#         """
-#         try:
-#             # --- TEMPORARY MOCK FOR PHASE 3 TESTING ---
-#             # This directly returns a hardcoded response to bypass the 429 Quota Error.
-#             return {
-#                 "diagnosis": "API is rate-limited, but simulated analysis shows Antigravity.exe is causing a memory leak.",
-#                 "recommended_action": {
-#                     "target_pid": 20392 
-#                 }
-#             }
-            
-#         except Exception as e:
-#             return {
-#                 "diagnosis": f"⚠️ AI Analysis Failed: {e}",
-#                 "recommended_action": {"target_pid": None}
-#             }

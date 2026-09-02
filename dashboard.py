@@ -60,11 +60,23 @@ st.title("🚀 Autonomous Infrastructure Agent")
 st.subheader("Verification & Audit Dashboard")
 st.caption("Auto-refresh: 15s | Human-in-the-Loop enabled")
 
+st.info(
+    "ℹ️ **Hosted Demo**: Metrics shown reflect the **cloud server** running this app. "
+    "Enter a Gemini API key in the sidebar to activate live AI diagnostics.",
+    icon="☁️"
+)
+
+
 with st.sidebar:
     st.header("🧠 AI Brain Config")
+    st.markdown(
+        "Get a **free** Gemini API key → "
+        "[Google AI Studio](https://aistudio.google.com/app/apikey)",
+        unsafe_allow_html=False
+    )
     gemini_api_key = st.text_input(
         "Gemini API Key", type="password",
-        help="Enter your Google Gemini API key to enable AI diagnostics."
+        help="Enter your Google Gemini API key to enable AI diagnostics. Get one free at aistudio.google.com"
     )
     brain = None
     if gemini_api_key:
