@@ -61,30 +61,40 @@ st.subheader("Verification & Audit Dashboard")
 st.caption("Auto-refresh: 15s | Human-in-the-Loop enabled")
 
 st.info(
-    "ℹ️ **Hosted Demo**: Metrics shown reflect the **cloud server** running this app. "
-    "Enter a Gemini API key in the sidebar to activate live AI diagnostics.",
-    icon="☁️"
+    "☁️ **Hosted Demo** — metrics reflect the cloud server. "
+    "**Demo Mode is ON by default** so all AI features are visible without any API key. "
+    "Toggle it off in the sidebar and add a Gemini key for live analysis.",
+    icon="🎬"
 )
 
 
 with st.sidebar:
     st.header("🧠 AI Brain Config")
-    st.markdown(
-        "Get a **free** Gemini API key → "
-        "[Google AI Studio](https://aistudio.google.com/app/apikey)",
-        unsafe_allow_html=False
+
+    demo_mode = st.toggle(
+        "🎬 Demo Mode", value=True,
+        help="Simulates an AI diagnosis so you can explore all features without an API key."
     )
-    gemini_api_key = st.text_input(
-        "Gemini API Key", type="password",
-        help="Enter your Google Gemini API key to enable AI diagnostics. Get one free at aistudio.google.com"
-    )
+
     brain = None
-    if gemini_api_key:
-        try:
-            brain = AIBrain(api_key=gemini_api_key)
-            st.success("AI Brain is ready ✅")
-        except Exception as e:
-            st.error(f"Invalid API Key: {e}")
+    if demo_mode:
+        st.success("Demo Mode active — AI features simulated ✅")
+    else:
+        st.markdown(
+            "Get a **free** Gemini API key → "
+            "[Google AI Studio](https://aistudio.google.com/app/apikey)",
+            unsafe_allow_html=False
+        )
+        gemini_api_key = st.text_input(
+            "Gemini API Key", type="password",
+            help="Enter your Google Gemini API key to enable live AI diagnostics."
+        )
+        if gemini_api_key:
+            try:
+                brain = AIBrain(api_key=gemini_api_key)
+                st.success("Live AI Brain is ready ✅")
+            except Exception as e:
+                st.error(f"Invalid API Key: {e}")
 
     st.divider()
     autonomous_mode = st.toggle(
@@ -174,19 +184,58 @@ with tab1:
     cpu = metrics['cpu_usage_percent']
     mem = metrics['memory']['percent']
 
-    alerts = []
-    if cpu > 80:
-        alerts.append(f"🔴 CRITICAL: High CPU Usage ({cpu}%)")
-    if mem > 90:
-        alerts.append(f"🔴 CRITICAL: High Memory Usage ({mem}%)")
+    # In demo mode, always show a simulated alert so all features are visible
+    if demo_mode:
+        demo_cpu = max(cpu, 84.7)   # ensure alert threshold is crossed in demo
+        demo_mem = max(mem, 91.3)
+        alerts = [
+            f"🔴 CRITICAL: High CPU Usage ({demo_cpu}%)",
+            f"🔴 CRITICAL: High Memory Usage ({demo_mem}%)"
+        ]
+    else:
+        demo_cpu, demo_mem = cpu, mem
+        alerts = []
+        if cpu > 80:
+            alerts.append(f"🔴 CRITICAL: High CPU Usage ({cpu}%)")
+        if mem > 90:
+            alerts.append(f"🔴 CRITICAL: High Memory Usage ({mem}%)")
 
     for alert in alerts:
         st.markdown(f'<div class="critical-alert">{alert}</div>', unsafe_allow_html=True)
 
-    # ──────────────────────────────────────────
-    # 🤖 AI Diagnosis (with 60s cooldown)
-    # ──────────────────────────────────────────
-    if alerts and brain:
+    # ──────────────────────────────────────────────
+    # 🤖 AI Diagnosis
+    # ──────────────────────────────────────────────
+
+    # ── Demo Mode: show a realistic simulated diagnosis ──
+    if demo_mode and alerts:
+        top_procs = metrics['top_processes']
+        demo_proc = top_procs[0] if top_procs else {"Name": "chrome.exe", "PID": 9821, "CPU %": 47.3}
+        demo_diagnosis = {
+            "diagnosis": (
+                f"CPU spike to {demo_cpu}% is driven by `{demo_proc['Name']}` "
+                f"(PID {demo_proc['PID']}) consuming {demo_proc['CPU %']}% of available cores, "
+                f"likely due to an unresponsive thread or memory leak. "
+                f"Simultaneously, RAM at {demo_mem}% suggests insufficient garbage collection "
+                f"or a runaway process holding large heap allocations."
+            ),
+            "recommended_action": {"target_pid": demo_proc['PID']}
+        }
+        st.error(f"🤖 **Agent Diagnosis** *(Demo)*\n\n{demo_diagnosis['diagnosis']}")
+        st.caption("🎬 Demo Mode: diagnosis is simulated. Toggle off Demo Mode and add a Gemini API key for live analysis.")
+
+        target_pid = demo_diagnosis['recommended_action']['target_pid']
+        if not autonomous_mode:
+            st.warning(f"🎯 AI recommends terminating **PID {target_pid}** ({demo_proc['Name']})")
+            if st.button(f"⚠️ Approve Termination of PID {target_pid} (Simulated)"):
+                st.success(f"✅ [Demo] Process '{demo_proc['Name']}' (PID {target_pid}) terminated successfully.")
+                st.toast("Remediation complete (simulated)", icon="🛡️")
+        else:
+            st.error(f"🛑 AUTONOMOUS ACTION TAKEN (Simulated): Terminated PID {target_pid} based on AI diagnosis.")
+            st.toast("Autonomous kill executed (simulated)", icon="🤖")
+
+    # ── Live Mode: real Gemini API call ──
+    elif alerts and brain:
         cooldown = 60
         elapsed = time.time() - st.session_state.last_api_call_time
 
@@ -283,7 +332,7 @@ with tab1:
             title='CPU Load Over Time'
         )
         fig.update_layout(yaxis_range=[0, 100])
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width='stretch')
 
     with proc_col:
         st.write("### Top 3 Processes")
@@ -305,7 +354,7 @@ with tab2:
     if audit_df.empty:
         st.info("No audit records found. The log is empty or has not been created yet.")
     else:
-        st.dataframe(audit_df, use_container_width=True)
+        st.dataframe(audit_df, width='stretch')
 
     st.divider()
 
