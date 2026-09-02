@@ -208,12 +208,18 @@ with tab1:
     for alert in alerts:
         st.markdown(f'<div class="critical-alert">{alert}</div>', unsafe_allow_html=True)
 
+    # Clear cached demo diagnosis when switching out of demo mode
+    if not demo_mode and st.session_state.get('was_demo_mode', True):
+        st.session_state.cached_diagnosis = None
+        st.session_state.last_api_call_time = 0.0
+    st.session_state['was_demo_mode'] = demo_mode
+
     # ──────────────────────────────────────────────
     # 🤖 AI Diagnosis
     # ──────────────────────────────────────────────
 
     # ── Demo Mode: show a realistic simulated diagnosis ──
-    if demo_mode and alerts:
+    if demo_mode:
         top_procs = metrics['top_processes']
         demo_proc = top_procs[0] if top_procs else {"Name": "chrome.exe", "PID": 9821, "CPU %": 47.3}
         demo_diagnosis = {
@@ -247,7 +253,7 @@ with tab1:
             st.toast("Autonomous kill executed (simulated)", icon="🤖")
 
     # ── Live Mode: real Gemini API call ──
-    elif alerts and brain:
+    elif brain:
         cooldown = 60
         elapsed = time.time() - st.session_state.last_api_call_time
 
