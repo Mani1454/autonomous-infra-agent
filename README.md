@@ -12,7 +12,12 @@ An intelligent IT operations system that reduces **Mean Time To Recovery (MTTR)*
 
 **[→ Try it live](https://autonomous-infra-agent.streamlit.app)**
 
-> To enable AI diagnostics on the live demo, enter a free Gemini API key from [Google AI Studio](https://aistudio.google.com/app/apikey) in the sidebar.
+> **🎬 Demo Mode is ON by default** — all AI features (diagnosis, remediation, autonomous mode) are fully visible without any setup.
+>
+> **To enable real Gemini AI analysis:**
+> 1. Toggle off **Demo Mode** in the sidebar
+> 2. Get a free API key at [aistudio.google.com/app/apikey](https://aistudio.google.com/app/apikey) *(no credit card needed)*
+> 3. Paste it in the **Gemini API Key** field
 
 ---
 

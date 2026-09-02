@@ -80,14 +80,19 @@ with st.sidebar:
     if demo_mode:
         st.success("Demo Mode active — AI features simulated ✅")
     else:
-        st.markdown(
-            "Get a **free** Gemini API key → "
-            "[Google AI Studio](https://aistudio.google.com/app/apikey)",
-            unsafe_allow_html=False
+        st.info(
+            "**Want real AI analysis?**\n\n"
+            "1. Visit [Google AI Studio](https://aistudio.google.com/app/apikey)\n"
+            "2. Sign in → click **Create API key**\n"
+            "3. Copy & paste it below\n\n"
+            "It's **free** — no credit card needed.",
+            icon="🔑"
         )
         gemini_api_key = st.text_input(
-            "Gemini API Key", type="password",
-            help="Enter your Google Gemini API key to enable live AI diagnostics."
+            "Gemini API Key",
+            type="password",
+            placeholder="Paste your key here...",
+            help="Get a free key at aistudio.google.com/app/apikey"
         )
         if gemini_api_key:
             try:
@@ -222,7 +227,14 @@ with tab1:
             "recommended_action": {"target_pid": demo_proc['PID']}
         }
         st.error(f"🤖 **Agent Diagnosis** *(Demo)*\n\n{demo_diagnosis['diagnosis']}")
-        st.caption("🎬 Demo Mode: diagnosis is simulated. Toggle off Demo Mode and add a Gemini API key for live analysis.")
+        st.info(
+            "🎬 **This is a simulated diagnosis.** "
+            "To see **real AI analysis** powered by Gemini:\n"
+            "1. Toggle off **Demo Mode** in the sidebar\n"
+            "2. Get a free API key at [aistudio.google.com/app/apikey](https://aistudio.google.com/app/apikey)\n"
+            "3. Paste it in the **Gemini API Key** field",
+            icon="🔑"
+        )
 
         target_pid = demo_diagnosis['recommended_action']['target_pid']
         if not autonomous_mode:
