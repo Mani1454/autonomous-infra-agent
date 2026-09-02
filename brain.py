@@ -7,7 +7,7 @@ class AIBrain:
     """
     AI-powered system health analyzer using Google Gemini.
 
-    Uses the Gemini 2.0 Flash model to provide SRE-level diagnostics
+    Uses the Gemini 2.5 Flash model to provide SRE-level diagnostics
     when system resource thresholds are exceeded.
     """
 
@@ -46,7 +46,7 @@ class AIBrain:
 
         try:
             response = self.client.models.generate_content(
-                model="gemini-3.6-flash",
+                model="gemini-2.5-flash",
                 contents=prompt
             )
             raw = response.text.strip()
@@ -77,16 +77,27 @@ class AIBrain:
 
         except Exception as e:
             error_msg = str(e)
-            if "429" in error_msg or "quota" in error_msg.lower() or "rate" in error_msg.lower():
+            error_lower = error_msg.lower()
+
+            # Rate limiting
+            if "429" in error_msg or "quota" in error_lower or "rate_limit" in error_lower:
                 friendly = (
                     "⚠️ Gemini API rate limit reached. "
                     "The free tier allows 15 requests/minute. "
                     "Analysis will resume automatically after the cooldown."
                 )
-            elif "403" in error_msg or "API_KEY" in error_msg.upper() or "invalid" in error_msg.lower():
+            # Authentication errors only — be specific, not broad
+            elif (
+                "401" in error_msg
+                or "403" in error_msg
+                or "api_key_invalid" in error_lower
+                or "unauthenticated" in error_lower
+                or "permission_denied" in error_lower
+            ):
                 friendly = "❌ Invalid Gemini API key. Please check the key entered in the sidebar."
+            # Everything else: show the actual error so it's debuggable
             else:
-                friendly = f"⚠️ AI Analysis temporarily unavailable: {e}"
+                friendly = f"⚠️ AI Analysis error: {e}"
 
             return {
                 "diagnosis": friendly,

@@ -2,7 +2,7 @@
 
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-Streamlit-FF4B4B?style=for-the-badge&logo=streamlit)](https://autonomous-infra-agent.streamlit.app)
 [![Python](https://img.shields.io/badge/Python-3.10+-3776AB?style=for-the-badge&logo=python)](https://python.org)
-[![Gemini AI](https://img.shields.io/badge/Gemini-3.6%20Flash-4285F4?style=for-the-badge&logo=google)](https://aistudio.google.com)
+[![Gemini AI](https://img.shields.io/badge/Gemini-2.5%20Flash-4285F4?style=for-the-badge&logo=google)](https://aistudio.google.com)
 
 An intelligent IT operations system that reduces **Mean Time To Recovery (MTTR)** by autonomously detecting and remediating infrastructure incidents. Powered by **Agentic AI (Gemini 2.0 Flash)**, this system goes beyond static threshold monitoring to deliver proactive, context-aware infrastructure management.
 
